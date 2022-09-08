@@ -81,7 +81,53 @@ $ kali@kali: /etc/ssh/default_kali_keys# md5sum *
 ```
 $ kali@kali: /etc/ssh/default_kali_keys# service ssh restart
 ```
+![image](https://user-images.githubusercontent.com/68323176/189158060-056f6d30-77d6-4c85-a3e5-73e7ff7219a0.png)
 
+![image](https://user-images.githubusercontent.com/68323176/189158095-356495f6-4024-41e4-a0a2-2628e87cac88.png)
+
+
+>#Set MOTD (Message of the Day) with a Nice ASCII
+
+***is used to send a common message to all the users. The banner is usually boring, so you can edit the files and add the text of your choice, then save the file.***
+
+```
+$ kali@kali:~# vi /etc/motd
+```
+##Restart the service
+```
+$ kali@kali:~# service ssh restart
+```
+![image](https://user-images.githubusercontent.com/68323176/189158882-59c554c3-db7d-44a3-905e-920203781eb7.png)
+
+>#Safety 2 change SSH Port
+
+To change the port with command :
+```
+$ kali@kali: /etc/ssh# cp /etc/ssh/sshd_config /etc/ssh/sshd_config_backup
+```
+![image](https://user-images.githubusercontent.com/68323176/189159266-bbe9a128-f07b-4f36-b5ae-9f9a421a228e.png)
+
+The SSH_config file can be edited further by entering the following command.
+```
+$ kali@kali: /etc/ssh# vi /etc/ssh/sshd_config
+```
+![image](https://user-images.githubusercontent.com/68323176/189159429-b127c6a5-7cfa-47a0-a105-3a2f9d0aca43.png)
+![image](https://user-images.githubusercontent.com/68323176/189159453-979d3a6c-fba8-403f-a547-3ec8b190eeff.png)
+
+Restart the service again:
+```
+$ kali@kali: /etc/ssh# service ssh restart
+```
+Use the SSH for the next time you use it.
+```
+$ kali@kali:~# ssh username@myhostnaname.com -p 10101
+```
+>Conclusion
+
+The term ‘SSH’ describes a set of rules and guidelines that tells your computer how to send data from one place to the other. The administrators, such as the application owner, administrators responsible for the entire system, or privileged users with higher levels of access mainly use the SSH server. I hope this article helped you with enabling SSH in Kali Linux. 
+
+
+Reference to [linuxhint](https://linuxhint.com/enable_ssh_kali_linux/)
 
 
 
