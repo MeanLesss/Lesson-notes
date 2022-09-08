@@ -127,7 +127,8 @@ $ kali@kali:~# ssh username@myhostnaname.com -p 10101
 The term ‘SSH’ describes a set of rules and guidelines that tells your computer how to send data from one place to the other. The administrators, such as the application owner, administrators responsible for the entire system, or privileged users with higher levels of access mainly use the SSH server. I hope this article helped you with enabling SSH in Kali Linux. 
 
 
-Reference to [linuxhint](https://linuxhint.com/enable_ssh_kali_linux/)
+Reference to 
+Author: Younis Said at : [linuxhint](https://linuxhint.com/enable_ssh_kali_linux/)
 
 
 
