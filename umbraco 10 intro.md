@@ -16,7 +16,7 @@ copy and paste in terminal .
 
 # After install and run:
 ```
-Open Umbraco after in website 
+Open Umbraco  in website 
 ```
 ## To make folder :
 ```
@@ -63,7 +63,16 @@ Settings > Models building > Generate Models > Reload the console >
 
 # `Multi page view`
 ## `Note` 1 view need 1 composition and when created view we will a composition
- 
+
+## `In master file`:
+### We contain the html dochtml ,script and css
+### also `need to` import the view into the master layout
+```
+@await.Html.PartialAsync("~/.../.../.../*.cshtml")
+--also add--
+@RenderBody()
+```
+
 # `Permission` to add another page after the root page:
 
 ### 1. click on the root content page in contents (this will go to permission page in setting/pages/(the root page file).
@@ -72,3 +81,6 @@ Settings > Models building > Generate Models > Reload the console >
 
 # `Note:` Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
  
+
+#`Partials Folder/Page:`
+### `Patial` view is the display content that can be used in any part of the website
