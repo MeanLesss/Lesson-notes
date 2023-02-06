@@ -21,7 +21,6 @@ Open Umbraco after in website
 ## To make folder :
 ```
 go to Settings > Document Types > (input name)
- 
 ```
 
 ## To add file to folder or make a template:
@@ -54,11 +53,9 @@ Input page title
  To create a model we can go to 
 ```
 Settings > Models building > Generate Models > Reload the console >
-
 ```
 # `So content is like a class that contain property to display.`
 # `Note:` everytime we made a new content we need to buile the model again.
-# `Composition` is an element we can reuse that have property or a property 
-class template like a class model.
+# `Composition` is an element we can reuse that have property or a property class template like a class model.
 # `Content` is retreiving property from the composition and value to display can be added in the content page.
 
