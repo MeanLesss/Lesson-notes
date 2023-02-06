@@ -91,5 +91,25 @@ Settings > Models building > Generate Models > Reload the console >
 ## `Partials Folder/Page:`
 ### `Patial` view is the display content that can be used in any part of the website
 
-# `Main Navigation`:
+# `Navigation`:
 
+## Dynamic navigation:
+We create a new composition for navigation:
+```
+Input composition name > add a tab > input name > Add property > select editor > multi url picker > save
+```
+
+
+We use `Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();` Class to render out the main page:
+```
+@{
+    var homePage = Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();
+}
+```
+after that in `href`:
+```
+<a href="@homePage.Url()">@homePage.Name</a>
+```
+-   `@homePage.Name`: display name of the page
+
+-   `@homePage.Url()`: get the mian page url `path/name`
