@@ -118,3 +118,5 @@ after that in `href`:
 -   `@homePage.Name`: display name of the page
 
 -   `@homePage.Url()`: get the mian page url `path/name`
+
+# [`This is the link to basic CRUD operation with Umbraco form`](https://www.youtube.com/watch?v=l0X9DOwd6zk)
