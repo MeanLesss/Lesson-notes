@@ -59,3 +59,16 @@ Settings > Models building > Generate Models > Reload the console >
 # `Composition` is an element we can reuse that have property or a property class template like a class model.
 # `Content` is retreiving property from the composition and value to display can be added in the content page.
 
+
+
+# `Multi page view`
+## `Note` 1 view need 1 composition and when created view we will a composition
+ 
+# `Permission` to add another page after the root page:
+
+### 1. click on the root content page in contents (this will go to permission page in setting/pages/(the root page file).
+### 2. in allow child node types (click on add child > and find the file that needed
+### 3. in content select on the page that need to have a subfile `you can create an item under the root page`
+
+# `Note:` Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
+ 
