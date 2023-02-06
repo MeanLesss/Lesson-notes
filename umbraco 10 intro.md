@@ -57,16 +57,17 @@ Input page title
 Settings > Models building > Generate Models > Reload the console >
 ```
 # `So content is like a class that contain property to display.`
-# `Note:` everytime we made a new content we need to buile the model again.
-# `Composition` is an element we can reuse that have property or a property class template like a class model.
-# `Content` is retreiving property from the composition and value to display can be added in the content page.
-
-
+# `Note:`
+### everytime we made a new content we need to buile the model again.
+## `Composition` is an element we can reuse that have property or a property class template like a class model.
+## `Content` is retreiving property from the composition and value to display can be added in the content page.
 
 # `Multi page view`
-## `Note` 1 view need 1 composition and when created view we will a composition
+# `Note`
+### 1 view need 1 composition and when created view we will a composition.
 
-## In Templates folder :
+
+## `In Templates folder` :
 ### `Need to make sure` the new templates page have the inheritance to master template.
 
 ## `In master file`:
@@ -92,15 +93,19 @@ Settings > Models building > Generate Models > Reload the console >
 ### `Patial` view is the display content that can be used in any part of the website
 
 # `Navigation`:
+## [Click here to check the video guide](https://www.youtube.com/watch?v=1kPyds7Z8Go&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=6)
 
 ## Dynamic navigation:
 We create a new composition for navigation:
 ```
 Input composition name > add a tab > input name > Add property > select editor > multi url picker > save
 ```
+Go to
+``` 
+main root page > composition > select the created navigation composition :
+```
 
-
-We use `Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();` Class to render out the main page:
+We use `Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();` Class to render out the main page :
 ```
 @{
     var homePage = Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();
