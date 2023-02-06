@@ -57,4 +57,8 @@ Settings > Models building > Generate Models > Reload the console >
 
 ```
 # `So content is like a class that contain property to display.`
-# `Note:` everytime we made a new content we need to buile the model again. 
+# `Note:` everytime we made a new content we need to buile the model again.
+# `Composition` is an element we can reuse that have property or a property 
+class template like a class model.
+# `Content` is retreiving property from the composition and value to display can be added in the content page.
+
