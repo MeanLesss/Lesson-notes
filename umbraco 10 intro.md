@@ -85,10 +85,10 @@ Settings > Models building > Generate Models > Reload the console >
 ### 3. in content select on the page that need to have a subfile `you can create an item under the root page`
 
 # `Note:` 
-## Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
+### Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
  
 
-##`Partials Folder/Page:`
+## `Partials Folder/Page:`
 ### `Patial` view is the display content that can be used in any part of the website
 
 # Main Navigation:
