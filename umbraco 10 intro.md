@@ -91,5 +91,5 @@ Settings > Models building > Generate Models > Reload the console >
 ## `Partials Folder/Page:`
 ### `Patial` view is the display content that can be used in any part of the website
 
-# Main Navigation:
+# `Main Navigation`:
 
