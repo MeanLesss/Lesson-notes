@@ -84,7 +84,8 @@ Settings > Models building > Generate Models > Reload the console >
 ### 2. in allow child node types (click on add child > and find the file that needed
 ### 3. in content select on the page that need to have a subfile `you can create an item under the root page`
 
-# `Note:` Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
+# `Note:` 
+## Once child node added to root the path of all directory such as CSS or any other Assets we have to check all right path. (We just need to add / indicate the start path from root folder.
  
 
 ##`Partials Folder/Page:`
