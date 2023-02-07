@@ -166,3 +166,8 @@ go to user > check user admin > look at email > change the password
         ...
 </header>
 ```
+
+## `Visibility navigation `(hide/Visible):
+```
+create a composition > input a name > add a Tab > add a Property > Enter a name for the property > MUST change the alias name to `umbracoNaviHide` > Add Editor (true/false) > Save
+```
