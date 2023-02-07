@@ -192,3 +192,30 @@ Route::post('/login', [LoginController::class, 'auth'])->name('login.auth');
     </div>
 @endif
 ```
+
+# Working with react in laravel :
+## First need to install laravel/ui:
+```
+composer require laravel/ui
+```
+
+## after the install finish run:
+```
+php artisan ui react
+```
+
+## after the install finish the project will required to run `npm install command`:
+```
+npm install
+---if error use---
+npm install --force
+```
+
+## To run the react server use this command :
+```
+npm run dev
+```
+
+
+
+
