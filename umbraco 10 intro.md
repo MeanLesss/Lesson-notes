@@ -172,11 +172,24 @@ go to user > check user admin > look at email > change the password
 create a composition > input a name > add a Tab > add a Property > Enter a name for the property > MUST change the alias name to `umbracoNaviHide` > Add Editor (true/false) > Save
 ```
 
-### inside navigation.cshtml (Partial view):
+### inside navigation.cshtml (Partial view that hold navigation list):
 add a function clause and use the Umbraco function
 ```
 @{
     var homePage = Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();
     var children = homePage?.Children?.Where(x => x.IsVisible()) ?? Enumerable.Empty<IPublishedContent>();
 }
+```
+dynamically get the nav content
+```
+<ul class="navbar-nav ms-auto py-4 py-lg-0">
+    @if (children != null && children.Any())
+    {
+        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@homePage?.Url()">Home</a></li>
+        foreach (var child in children)
+        {
+            <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@child.Url()">@child.Name</a></li>
+        }
+    }
+ </ul
 ```
