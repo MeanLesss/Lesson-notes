@@ -93,8 +93,7 @@ Settings > Models building > Generate Models > Reload the console >
 ## `Partials Folder/Page:`
 ### `Patial` view is the display content that can be used in any part of the website
 
-# `Navigation`:
-## [Click here to check the video guide](https://www.youtube.com/watch?v=1kPyds7Z8Go&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=6)
+# `Navigation`: [click here to check the video guide](https://www.youtube.com/watch?v=1kPyds7Z8Go&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=6)
 
 ## Dynamic navigation:
 We create a new composition for navigation:
@@ -120,8 +119,7 @@ after that in `href`:
 
 -   `@homePage.Url()`: get the mian page url `path/name`
 
-# `CRUD Operation`
-# [`This is the link to basic CRUD operation with Umbraco form`](https://www.youtube.com/watch?v=l0X9DOwd6zk)
+# `CRUD Operation:` [This is the link to basic CRUD operation with Umbraco form](https://www.youtube.com/watch?v=l0X9DOwd6zk)
 
 # Day 2 `(8/Feb/2023)`
 ## Started the cred to log in in Umbraco localhost:
