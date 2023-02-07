@@ -171,3 +171,12 @@ go to user > check user admin > look at email > change the password
 ```
 create a composition > input a name > add a Tab > add a Property > Enter a name for the property > MUST change the alias name to `umbracoNaviHide` > Add Editor (true/false) > Save
 ```
+
+### inside navigation.cshtml (Partial view):
+add a function clause and use the Umbraco function
+```
+@{
+    var homePage = Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();
+    var children = homePage?.Children?.Where(x => x.IsVisible()) ?? Enumerable.Empty<IPublishedContent>();
+}
+```
