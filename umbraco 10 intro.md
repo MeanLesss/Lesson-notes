@@ -143,3 +143,26 @@ start the server again > set up a new cred
 ```
 go to user > check user admin > look at email > change the password
 ``` 
+
+
+## `Note: ` we can use @Mode.Value("valueName..") to access the value from partial view
+--or--
+
+## We can use insert on the interface to generate the Model getValue.
+
+<br>
+
+# To get the Image from the content:
+```
+@{
+    <!-- Assign a variable equal to model value -->
+    var image = Model.Value<IPublishedContent>("mainImage");
+}
+```
+
+## To get the image url `example`:
+```
+<header class="masthead" style="background-image: url('@image.Url()')">
+        ...
+</header>
+```
