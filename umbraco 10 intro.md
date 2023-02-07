@@ -193,3 +193,9 @@ dynamically get the nav content
     }
  </ul
 ```
+
+# `Site navigation by compostion`:
+```
+create a composition file > Enter the name >
+ Add property > Enter property name > Add Editor (Multi URL Picker) > save 
+```
