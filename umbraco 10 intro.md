@@ -1,3 +1,4 @@
+# Day 1 `(7/Feb/2023)`
 * Need to use dotnet 6
 # Umbraco Installation command:
 
@@ -121,3 +122,11 @@ after that in `href`:
 
 # `CRUD Operation`
 # [`This is the link to basic CRUD operation with Umbraco form`](https://www.youtube.com/watch?v=l0X9DOwd6zk)
+
+# Day 2 `(8/Feb/2023)`
+## Started the cred to log in in Umbraco localhost:
+```
+Name: sokvimean
+Email: sokvimean@gmail.com
+pass : sokvimean123
+```
