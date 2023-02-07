@@ -126,9 +126,9 @@ after that in `href`:
 # Day 2 `(8/Feb/2023)`
 ## Started the cred to log in in Umbraco localhost:
 ```
-Name: vimean
-Email: vimean@gmail.com
-pass : vimean123
+Name: sokvimean
+Email: sokvimean@gmail.com
+pass : sokvimean123
 ```
 
 # To `Reset ADMIN` local login cred:
