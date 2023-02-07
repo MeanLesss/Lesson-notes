@@ -126,7 +126,7 @@ after that in `href`:
 # Day 2 `(8/Feb/2023)`
 ## Started the cred to log in in Umbraco localhost:
 ```
-Name: sokvimean
-Email: sokvimean@gmail.com
+Name: vimean
+Email: vimean@gmail.com
 pass : sokvimean123
 ```
