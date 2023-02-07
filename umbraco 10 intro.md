@@ -194,8 +194,36 @@ dynamically get the nav content
  </ul
 ```
 
-# `Site navigation by compostion`:
+# `Site navigation by compostion` (Method 2):
 ```
 create a composition file > Enter the name >
- Add property > Enter property name > Add Editor (Multi URL Picker) > save 
+Add property > Enter property name > Add Editor (Multi URL Picker) > save 
+```
+## After navigation compostion is created: 
+```
+Add the composition to the Home page or main page > edit in the content 
+> Navigation compostion > Add > Set link to page (one by one and by order of the page)
+```
+
+## After config content already:
+We will change the `children` method to other method getting all the path from the nav composition.
+```
+@{
+    var homePage = Umbraco.AssignedContentItem.AncestorOrSelf<HomePage>();
+    var children = homePage?.MainNavigation;
+}
+```
+Then :
+
+```
+<ul class="navbar-nav ms-auto py-4 py-lg-0">
+    @if (children != null && children.Any())
+    {
+        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@homePage?.Url()">Home</a></li>
+        foreach (var child in children)
+        {
+            <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@child.Url">@child.Name</a></li>
+            }
+        }
+</ul>
 ```
