@@ -140,3 +140,8 @@ appsetting.json > remove the connection string
 ```
 start the server again > set up a new cred
 ```
+## After reinstall database config
+### we will need to check the info inside user content
+```
+go to user > check user admin > look at email > change the password
+``` 
