@@ -130,3 +130,13 @@ Name: vimean
 Email: vimean@gmail.com
 pass : vimean123
 ```
+
+# To `Reset ADMIN` local login cred:
+## First
+```
+appsetting.json > remove the connection string
+```
+## Second
+```
+start the server again > set up a new cred
+```
