@@ -230,11 +230,11 @@ Then :
 ## Navigation `Method 3`
 ```
 @{
-    var homePage = Model.AncestorOrSelf();
+    var homePage = Model.AncestorOrSelf(1); //1 is the level it needed
     var children = homePage?.Children;
 }
 ``` 
-When loop render output:
+## When loop render output:
 ```
 <ul class="navbar-nav ms-auto py-4 py-lg-0">
     @if (children != null && children.Any())
@@ -250,7 +250,20 @@ When loop render output:
     }
 </ul>
 ```
+## Model.Content is the current page that we're on. AncestorsOrSelf is all of the ancestors this page has in the tree. (level) means: go up to level 1/2/3/... and stop looking for more ancestors when you get there.
 
+### As you can see in the example below, the level gets on increasing - level + 1. so, it starts by 1 and then just go on adding 1 to your sub levels.
+```
+- Content
+ -- Home (level = 1)
+   -- About Us (level = 2)
+   -- Contact Us (level = 2)
+   -- News Area (level = 2)
+     -- News Item 1 (level = 3)
+     -- News Item 2 (level = 3)
+ -- Other Node (level = 1)
+```
+## So when you mention 3 as parameter for AncestorOrSelf, you are asking to move to 3rd level in the tree from the current element that can be any document/partial view and stop looking for any more ancestors when its found.
 
 # Day 3 `(9/Feb/2023)`
 
