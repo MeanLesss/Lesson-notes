@@ -216,6 +216,12 @@ npm install --force
 npm run dev
 ```
 
+# phpmyadmiin use Hash to encrypt and decrypt the password
+To save the password to database:
+```
+use Illuminate\Support\Facades\Hash;
+$user->password = Hash::make($request->password);
+```
 
 
 
