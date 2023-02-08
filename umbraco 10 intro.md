@@ -263,8 +263,18 @@ Then :
      -- News Item 2 (level = 3)
  -- Other Node (level = 1)
 ```
-## So when you mention 3 as parameter for AncestorOrSelf, you are asking to move to 3rd level in the tree from the current element that can be any document/partial view and stop looking for any more ancestors when its found.
+## So when you mention 3 as parameter for AncestorOrSelf, you are asking to move to 3rd level in the tree from the current element that can be any document/partial view and stop looking for any more ancestors when its found. 
+It is basically for fetching ancestors by level, doesn't matter what your current level or currentpage object is.
 
+## `For example`, if you want to create a navigation in your main layout so as to share it on all pages of your site, you will do something like this in your template:
+```
+<ul>
+ @foreach(var page in @CurrentPage.AncestorOrSelf(1).Children)
+ {
+   <li><a href="@page.Url">@page.Name</a></li>
+ }
+</ul>
+```
 # Day 3 `(9/Feb/2023)`
 
 ## Try to fix the duplicate packages in umbraco 10
