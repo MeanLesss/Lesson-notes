@@ -227,6 +227,31 @@ Then :
         }
 </ul>
 ```
+## Navigation `Method 3`
+```
+@{
+    var homePage = Model.AncestorOrSelf();
+    var children = homePage?.Children;
+}
+``` 
+When loop render output:
+```
+<ul class="navbar-nav ms-auto py-4 py-lg-0">
+    @if (children != null && children.Any())
+    {
+        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@homePage?.Url()">Home</a></li>
+        foreach (var child in children)
+        {
+            if (child != null)
+            {
+                <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="@child.Url()">@child.Name</a></li>
+            }
+        }
+    }
+</ul>
+```
+
+
 # Day 3 `(9/Feb/2023)`
 
 ## Try to fix the duplicate packages in umbraco 10
