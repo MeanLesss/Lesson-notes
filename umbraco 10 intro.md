@@ -227,3 +227,44 @@ Then :
         }
 </ul>
 ```
+# Day 3 `(9/Feb/2023)`
+
+## Try to fix the duplicate packages in umbraco 10
+
+### Use `_ViewImports.cshtml` if not exits you can create the file in `Partial View`(Folder) and paste in the follwing code:
+```
+@using Umbraco.Extensions
+@using CMSTest
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Cms.Web.Common.Views
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Microsoft.AspNetCore.Html
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Smidge
+@inject Smidge.SmidgeHelper SmidgeHelper 
+```
+
+## inherits uses
+### In lower version
+Allways use
+```
+
+@inherits Umbraco.Web.Mvc.UmbracoViewPage 
+```
+And if you use ModelsBuilder use:
+```
+@inherits Umbraco.Web.Mvc.UmbracoViewPage<someclass> 
+```
+
+You don't need UmbracoTemplatePage with latest Umbraco, it contains the same methods but with Dynamics support.
+
+UmbracoTemplatePage is mostly a convenience, it is the same as UmbracoViewPage
+
+[Really great explanations here](https://our.umbraco.org/forum/developers/api-questions/52597-What-is-the-difference-between-UmbracoViewPage-and-UmbracoTemplatePage)
+
+
+### For `Umbraco 10` Use:
+```
+@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+```
