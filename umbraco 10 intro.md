@@ -321,3 +321,6 @@ UmbracoTemplatePage is mostly a convenience, it is the same as UmbracoViewPage
 # Day 4 `(9/Feb/2023)`
 
 # Take a look on `how to make an element that can have multiple paragraph` -->[(Block List Editor)](https://www.youtube.com/watch?v=lqWoNf27hyc&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=9)
+
+# Take a look on `the document of Umbraco with PetaPoco` -->[(Block List Editor)](# Take a look on `how to make an element that can have multiple paragraph` -->[(Umbraco with Database)](https://www.youtube.com/watch?v=lqWoNf27hyc&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=9)
+)
