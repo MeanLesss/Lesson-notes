@@ -223,5 +223,26 @@ use Illuminate\Support\Facades\Hash;
 $user->password = Hash::make($request->password);
 ```
 
+#Working with cookie:
+## Add/Set cookie `(Using Cookie Facade)`:
+```
+Cookie::queue('name', 'value', $minutes);
+```
+## Add/Set cookie `with Request Response`:
+```
+cookie('name', 'value', $minutes);
+```
 
+## Get cookie `(Using Cookie Facade)`:
+```
+Cookie::get('name')
+```
+## Get cookie `with Request Response`:
+```
+$request->cookie('name')
+```
 
+## Delete cookie `(Using Cookie Facade)`:
+```
+Cookie::forget('name')
+```
