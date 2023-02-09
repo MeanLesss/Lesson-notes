@@ -1,4 +1,4 @@
-# Day 1 `(7/Feb/2023)`
+# Day 1 `(6/Feb/2023)`
 * Need to use dotnet 6
 # Umbraco Installation command:
 
@@ -121,7 +121,7 @@ after that in `href`:
 
 # `CRUD Operation:` [This is the link to basic CRUD operation with Umbraco form](https://www.youtube.com/watch?v=l0X9DOwd6zk)
 
-# Day 2 `(8/Feb/2023)`
+# Day 2 `(7/Feb/2023)`
 ## Started the cred to log in in Umbraco localhost:
 ```
 Name: sokvimean
@@ -275,7 +275,7 @@ It is basically for fetching ancestors by level, doesn't matter what your curren
  }
 </ul>
 ```
-# Day 3 `(9/Feb/2023)`
+# Day 3 `(8/Feb/2023)`
 
 ## Try to fix the duplicate packages in umbraco 10
 
@@ -316,3 +316,5 @@ UmbracoTemplatePage is mostly a convenience, it is the same as UmbracoViewPage
 @using Umbraco.Cms.Web.Common.PublishedModels;
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
 ```
+
+# Day 4 `(9/Feb/2023)`
