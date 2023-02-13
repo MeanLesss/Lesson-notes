@@ -324,3 +324,109 @@ UmbracoTemplatePage is mostly a convenience, it is the same as UmbracoViewPage
 
 # Take a look on `the document of Umbraco with PetaPoco` -->[(Block List Editor)](# Take a look on `how to make an element that can have multiple paragraph` -->[(Umbraco with Database)](https://www.youtube.com/watch?v=lqWoNf27hyc&list=PL90L_HquhD-81xTOCLLJZLl1roU6hXPhp&index=9)
 )
+
+# Day 5 `(10/Feb/2023)`
+
+## Take a look on `how to make a component that contain a form input` -->[(Block List Editor)](https://www.bing.com/videos/search?q=umbraco+10+why+Component+folder+is+not+visible&&view=detail&mid=C43F5BDAE01200EFF6B0C43F5BDAE01200EFF6B0&&FORM=VRDGAR&ru=%2Fvideos%2Fsearch%3Fq%3Dumbraco%2B10%2Bwhy%2BComponent%2Bfolder%2Bis%2Bnot%2Bvisible%26FORM%3DHDRSC4)
+
+# Working on `PetaPoco` [Check out the docs](https://github.com/CollaboratingPlatypus/PetaPoco/wiki/Ways-to-instantiate-PetaPoco):
+
+## Setting up the connection string:
+```
+// Fluent configuration constructor
+public Database(IBuildConfiguration configuration)
+
+// Traditional constructors
+public Database(IDbConnection connection, IMapper defaultMapper = null)
+public Database(string connectionString, string providerName, IMapper defaultMapper = null)
+public Database<TDatabaseProvide>(string connectionString, IMapper defaultMapper = null)
+public Database(string connectionString, DbProviderFactory factory, IMapper defaultMapper = null)
+public Database(string connectionString, IProvider provider, IMapper defaultMapper = null)
+```
+### The used method in the project is `public Database(string connectionString, IProvider provider)`
+Example:
+```
+    var db = new PetaPoco.Database("Data Source=example\...;User ID=name;Password=password;Initial Catalog= DBName;","Microsoft.Data.SqlClient");
+    
+    ---or---
+
+    var connectionString = @"Data Source=example\...;User ID=name;Password=password;Initial Catalog= DBName;";
+    var provider = @"Microsoft.Data.SqlClient";
+    var db = new PetaPoco.Database(connectionString,provider);
+```
+
+
+# Creating form input in Umbraco 10 [Check this document](https://docs.umbraco.com/v/10.x-lts/umbraco-cms/fundamentals/code/creating-forms) 
+# Gettin data from form submit:
+## To get started we need `ViewModel` Class Object in `Models` folder inside project `Example`:
+```
+namespace SecondCMS.Models.pocos
+{
+    [TableName("Users")]
+    [PrimaryKey("ID",AutoIncrement =true)]
+    [ExplicitColumns]
+    public class UserViewModel
+    {
+        public int ID { get; set; }
+        public string? Name { get; set; }
+        /*public string Email { get; set; }*/
+        public string? Password { get; set; }
+    }
+}
+
+```
+# Then we need a View Creating the view for the form to the `/View/Partials` folder. Because we've added the `model` and built the solution we can add it as a strongly typed `view`. Name your view `"SignUpForm"`.The view can be built with standard MVC helpers:
+```
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using SecondCMS.Models.pocos;
+@using SecondCMS.Controllers;
+@{
+    var user = new UserViewModel();
+}
+
+@using (Html.BeginUmbracoForm<SignUpController>(nameof(SignUpController.Submit)))
+{
+    <div class="input-group">
+            <label asp-for="@user.Name"></label>
+            <input asp-for="@user.Name" />
+    </div>
+    <div>
+            <label asp-for="@user.Password"></label>
+            <input asp-for="@user.Password" />
+    </div>
+    <div>
+            <label name="Confirm Password"></label>
+            <input name="confirm"></input>
+    </div>
+    <br/>
+    <input type="submit" name="Submit" value="Sign up" />
+}
+```
+# `Note` to access the `ViewModel` values we must use `@using SecondCMS.Models...` 
+
+## Then we need the controller we have to create a folder `Controllers` inside the root directory and we can add a class `ExampleController` Controller suffix is needed. `Example`:
+```
+
+namespace SecondCMS.Controllers
+{
+    public class SignUpController : Umbraco.Cms.Web.Website.Controllers.SurfaceController
+    {
+        [HttpPost]
+        [ValidateUmbracoFormRouteString]
+        public IActionResult Submit(UserViewModel user)
+        {
+            var db = new PetaPoco.Database(connectionString, provider);
+            //var users = db.Query<UserViewModel>("SELECT * FROM Users");
+            db.Save("Users","ID",user);
+            db.Dispose();
+            return RedirectToCurrentUmbracoUrl();
+            //return RedirectToCurrentUmbracoPage();
+            //return "Result : Username = " + user.Name;
+        }
+    }
+}
+
+```
+
+
+## `Note` the controllers must
