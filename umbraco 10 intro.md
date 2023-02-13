@@ -427,6 +427,29 @@ namespace SecondCMS.Controllers
 }
 
 ```
+# Adding the form to a template
+## You can add the form to a template by rendering the partial view:
+```                
+@await Html.PartialAsync("~/Views/Partials/SignUpFormInput.cshtml");
+```
 
 
-## `Note` the controllers must
+# Validate form buy the inout name we will be using `Request.Form["The name of the element that we want"]`:
+
+```
+[HttpPost]
+[ValidateUmbracoFormRouteString]
+public IActionResult Submit(UserViewModel user)
+{
+    if (user != null)
+    {
+        if (user.Password == Request.Form["Confirm"])
+        {
+            ....continue code here....
+        }
+    }
+    return RedirectToCurrentUmbracoUrl();
+}
+```
+
+
