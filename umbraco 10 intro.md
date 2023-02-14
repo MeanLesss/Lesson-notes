@@ -572,4 +572,7 @@ else
 
  # This is how we try to save user in `Memory Cache`:[See the docs here](https://www.c-sharpcorner.com/article/caching-mechanism-in-asp-net-core/)
 
+ # This is how we try to save user in `Asp.net InMemoryCaching`[Asp.net InMemoryCaching](https://code-maze.com/aspnetcore-in-memory-caching/)
+
  # This is how we try to save user in `Memory Cache with umbraco`: [Using umbraco caching](https://docs.umbraco.com/v/10.x-lts/umbraco-cms/reference/cache/updating-cache)
+
