@@ -452,4 +452,87 @@ public IActionResult Submit(UserViewModel user)
 }
 ```
 
+# Date`(14/Frb/2023)` : Working on form validation
 
+## To pass the object from `Controller` to `View` specifically for `.Net Core 6`: [This is the document website](https://www.c-sharpcorner.com/UploadFile/abhikumarvatsa/various-ways-to-pass-data-from-controller-to-view-in-mvc/) 
+
+## The code example from a `SignUpController`:
+```
+[HttpPost]
+[ValidateUmbracoFormRouteString]
+public IActionResult Submit(UserViewModel user)
+{
+    if (user != null)
+    {
+        if (user.Password == Request.Form["Confirm"])
+        {
+            var db = new PetaPoco.Database(connectionString, provider);
+            db.Save("Users", "ID", user);
+            db.Dispose();
+            ViewBag.saved = true;
+            return CurrentUmbracoPage();
+        }
+        else
+        {
+            //string alert = "error password";
+            /*string alert = @"<script type='text/javascript'>alert('error password');</script>";
+            //return Content(alert);
+            return RedirectToCurrentUmbracoPage();*/
+            //return RedirectToPage("/sign-up", new {error = true});]
+            //var html = @"<h1>Password doesn't match</h1>
+                            <a class='btn' href='/sign-up'>Go Back</a>";
+
+            ViewBag.saved = false;
+            return CurrentUmbracoPage();
+        }
+    }
+    //return RedirectToCurrentUmbracoUrl();
+    return Redirect("/home");
+}
+```
+### Also we will need to use the umbraco redirect function to return to same page and check the value from `viewbag`:
+```
+ return CurrentUmbracoPage();
+ ----or----
+ return RedirectToCurrentUmbracoUrl();
+ ```
+
+ ## Example from `SignUpViewForm` (The partial form that have the connect with the controller) :
+ ```
+
+@if (ViewBag.saved == null)
+{
+    
+    @using (Html.BeginUmbracoForm<SignUpController>(nameof(SignUpController.Submit), FormMethod.Post))
+    {
+        <div asp-validation-summary="All"></div>
+        <div class="d-flex flex-column justify-content-center align-item-center">
+            <div class="d-flex flex-row justify-content-between">
+                <label asp-for="@user.Name"></label>
+                <input asp-for="@user.Name" />
+            </div>
+            <div class="d-flex flex-row justify-content-between">
+                <label asp-for="@user.Password"></label>
+                <input asp-for="@user.Password" />
+            </div>
+            <div class="d-flex flex-row justify-content-between">
+                <label name="Confrim">Confirm password</label>
+                <input name="confirm"></input>
+            </div>
+            <br/>
+            <input type="submit" class="btn btn-success" name="Submit" value="Sign up"/>
+        </div>
+    }
+
+}
+@if(ViewBag.saved ==false)
+{
+    <h1>Password doesn't match</h1>
+    <a class='btn' href='/sign-up'>Go Back</a>
+}
+else
+{
+    <h1>Sign up Successfully</h1>
+    <a class='btn' href='/home'>Go Home</a>
+}
+ ```
