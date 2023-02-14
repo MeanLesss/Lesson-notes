@@ -536,3 +536,5 @@ else
     <a class='btn' href='/home'>Go Home</a>
 }
  ```
+
+ # Next thing to do is to set `Cookie` from controller and make the view `detected` cookie: [The forum](https://stackoverflow.com/questions/39390240/create-cookie-asp-net-mvc) 
