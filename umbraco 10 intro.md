@@ -538,3 +538,36 @@ else
  ```
 
  # Next thing to do is to set `Cookie` from controller and make the view `detected` cookie: [The forum](https://stackoverflow.com/questions/39390240/create-cookie-asp-net-mvc) 
+
+ ## Saving object to Cookies Example:
+ ```
+ if (resUser.Count() > 0)
+{
+    //saving user to cookie if login sucess
+    var cookie = new CookieOptions();
+    cookie.Secure = false;
+    cookie.Expires = DateTime.Now.AddDays(1);
+    cookie.Path = "/log-in";
+    //We have to serialize the list to text first
+    var serialized = JsonSerializer.Serialize(resUser).ToString();
+    //Lastly, add the cookie to the response object, as shown below:
+    
+    Response.Cookies.Append("cookUser", serialized, cookie);
+    
+    //Send the flag to the view to display the right part
+    ViewBag.resUser = true;
+    //ViewBag.ser = serialized;
+    return CurrentUmbracoPage();
+    
+}
+else
+{
+    /* var html = @"<h1>User not found</h1>
+                    <a class='btn' href='/log-in'>Go Back</a>";*/
+    //return Content(html, "text/html");
+    ViewBag.resUser = false;
+    return CurrentUmbracoPage();
+}
+ ```
+
+ # This is how we try to save user in `Memory Cache`:[See the docs here](https://www.c-sharpcorner.com/article/caching-mechanism-in-asp-net-core/)
