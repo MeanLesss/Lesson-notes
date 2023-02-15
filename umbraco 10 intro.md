@@ -617,7 +617,7 @@ public class Program
 ```
 
 ## =====>>> `Startup.cs`
-we will have to add `app.UseSession()` inside the `Configure` function:;
+we will have to add `app.UseSession()` inside the `Configure` function of `Startup.cs`:;
 ```
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
@@ -710,8 +710,7 @@ public IActionResult Login(UserViewModel user)
 ## Inside the view Razor page:
 ```
 @inherits UmbracoViewPage
-@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
-
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @using SecondCMS.Controllers;
 @using SecondCMS.Models.pocos;
 @using Microsoft.Extensions;
