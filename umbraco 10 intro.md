@@ -576,3 +576,157 @@ else
 
  # This is how we try to save user in `Memory Cache with umbraco`: [Using umbraco caching](https://docs.umbraco.com/v/10.x-lts/umbraco-cms/reference/cache/updating-cache)
 
+# Session setup `document` [Click here](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/app-state?view=aspnetcore-7.0#session-state)
+
+
+# To save data inside of session `example`:
+## First we need to config the `program.cs` and `startup.cs`:
+## =====>>> `Program.cs`
+```
+public class Program
+{
+
+    public static void Main(string[] args)
+    {
+        //we have to add the builder in here in other to add the session function
+        //=============
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(20);
+            options.Cookie.HttpOnly = false;
+            options.Cookie.IsEssential = true;
+        });
+
+        //=============
+        CreateHostBuilder(args)
+            .Build()
+            .Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureUmbracoDefaults()
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStaticWebAssets();
+                webBuilder.UseStartup<Startup>();
+            });
+}
+```
+
+## =====>>> `Startup.cs`
+we will have to add `app.UseSession()` inside the `Configure` function:;
+```
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    
+    app.UseSession();
+
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseUmbraco()
+        .WithMiddleware(u =>
+        {
+            u.UseBackOffice();
+            u.UseWebsite();
+        })
+        .WithEndpoints(u =>
+        {
+            u.UseInstallerEndpoints();
+            u.UseBackOfficeEndpoints();
+            u.UseWebsiteEndpoints();
+        });
+}
+```
+
+## This is inside of the `loginController` login function:
+
+### We also need to import 
+```
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using NPoco;
+using SecondCMS.Models.pocos;
+using System.Net;
+using System.Text.Json;
+using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Configuration.Models;
+using Umbraco.Cms.Core.Logging;
+using Umbraco.Cms.Core.Models.ContentEditing;
+using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Infrastructure.Persistence;
+using Umbraco.Cms.Web.Common.Filters;
+using Umbraco.Cms.Web.Website.Controllers;
+using Microsoft.AspNetCore;
+using uSync;
+using System.Text;
+using Newtonsoft.Json.Linq; 
+```
+
+```
+[HttpPost]
+[ValidateUmbracoFormRouteString]
+public IActionResult Login(UserViewModel user)
+{
+    if (user != null)
+    {
+        var db = new PetaPoco.Database(CONNECTION_STRING, PROVIDER);
+        var query = "SELECT * FROM Users WHERE Name='" + user.Name + "'AND Password='" + user.Password + "'";
+        var resUser = db.Query<UserViewModel>("SELECT * FROM Users WHERE Name=@0 and Password=@1", user.Name, user.Password);
+        db.Dispose();
+        if (resUser.Count() > 0)
+        {
+            //We have to first serialize the list to text first
+            var serialized = JsonSerializer.Serialize(resUser).ToString();
+
+            //set the session values                 
+            HttpContext.Session.SetString("user",serialized);
+
+            //Send the flag to the view to display the right part
+            ViewBag.resUser = true;
+
+            ViewBag.ser = JsonSerializer.Deserialize<List<UserViewModel>>(HttpContext.Session.GetString("user")!);
+            return CurrentUmbracoPage();
+        }
+        else
+        {
+            //ViewBag is just a class indecator for the view
+            ViewBag.resUser = false;
+            return CurrentUmbracoPage();
+        }
+    }
+}
+```
+
+## Inside the view Razor page:
+```
+@inherits UmbracoViewPage
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels
+
+@using SecondCMS.Controllers;
+@using SecondCMS.Models.pocos;
+@using Microsoft.Extensions;
+@*We need this library to Use Context.Session.get/get data*@
+@using Microsoft.AspNetCore.Http; 
+@using System.Text.Json;
+@{
+    var homePage = Model.AncestorOrSelf<ContentModels.Home>();
+    //   var users = ViewBag.user;
+    var stringUser = Context.Session.GetString("user");
+    var jUser = new List<UserViewModel>();
+    if(stringUser != null)
+    {
+        //To get all the value from session into JSON format
+        jUser = JsonSerializer.Deserialize<List<UserViewModel>>(Context.Session.GetString("user")!);
+    }
+}
+```
