@@ -729,3 +729,6 @@ public IActionResult Login(UserViewModel user)
     }
 }
 ```
+
+
+# JavaScript Caching [Here is the document](https://blog.logrocket.com/javascript-cache-api/)
