@@ -227,7 +227,7 @@ Then :
         }
 </ul>
 ```
-## Navigation `Method 3`
+## Navigation With AncestorOrSelf(<int level!>) `Method 3`
 ```
 @{
     var homePage = Model.AncestorOrSelf(1); //1 is the level it needed
