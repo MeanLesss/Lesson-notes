@@ -227,6 +227,11 @@ Then :
         }
 </ul>
 ```
+---
+## Navigation forum for `children inside children` [Click here](https://our.umbraco.com/forum/using-umbraco-and-getting-started/100853-get-children-of-children)
+
+
+---
 ## Navigation With AncestorOrSelf(<int level!>) `Method 3`
 ```
 @{
