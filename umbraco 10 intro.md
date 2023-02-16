@@ -737,3 +737,5 @@ public IActionResult Login(UserViewModel user)
 
 
 # JavaScript Caching [Here is the document](https://blog.logrocket.com/javascript-cache-api/)
+---
+# We will use `AJAX` to submit form to the controller to `prevent page refresh` [See the forums here](https://our.umbraco.com/forum/using-umbraco-and-getting-started/101212-prevent-page-from-refreshing-after-a-form-is-submited)
