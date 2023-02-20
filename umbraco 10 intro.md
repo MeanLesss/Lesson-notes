@@ -742,3 +742,12 @@ public IActionResult Login(UserViewModel user)
 
  # ----Other forum here 👇👇👇👇👇
  # [Ajax attribute in form tag](https://stackoverflow.com/questions/61788159/post-form-without-refresh-net-core-mvc)
+
+
+ # Sweet alert and JQUERY script
+ ```
+<script src="/scripts/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+<link rel="stylesheet" href="sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+```
