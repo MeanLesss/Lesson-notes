@@ -69,6 +69,10 @@ setup_hotspot() {
     exit 1
   fi
 
+  echo
+  echo "Configuration is complete. Proceeding with package installation and setup."
+
+  # Install required packages
   echo "[+] Installing required packages..."
   apt update
   apt install -y hostapd dnsmasq iptables-persistent
