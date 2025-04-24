@@ -60,6 +60,7 @@ setup_hotspot() {
   ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
   WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
 
+  # Get SSID and Password
   read -p "Enter Hotspot SSID: " SSID
   read -s -p "Enter Hotspot Password (min 8 chars): " PASS
   echo
@@ -70,7 +71,15 @@ setup_hotspot() {
   fi
 
   echo
-  echo "Configuration is complete. Proceeding with package installation and setup."
+  echo "Configuration complete."
+  echo "Proceeding with package installation and setup."
+
+  # Ask user to confirm before continuing
+  read -p "Do you want to proceed with the installation and setup? (y/n): " confirm
+  if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+    echo "Exiting script. No changes were made."
+    exit 0
+  fi
 
   # Install required packages
   echo "[+] Installing required packages..."
