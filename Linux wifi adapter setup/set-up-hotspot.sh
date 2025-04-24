@@ -2,64 +2,28 @@
 
 set -e
 
-# Function to show interface selection menu
-choose_interface() {
+# Function to prompt user for input
+choose_input() {
   local prompt="$1"
-  shift
-  local ifaces=("$@")
-
-  if [ "${#ifaces[@]}" -eq 0 ]; then
-    echo "No interfaces found! Exiting."
-    exit 1
-  fi
-
-  echo
-  echo "$prompt"
-  for i in "${!ifaces[@]}"; do
-    echo "$((i+1))) ${ifaces[$i]}"
-  done
-
+  local iface
   while true; do
-    read -p "Choose [1-${#ifaces[@]}]: " index
-    if [[ "$index" =~ ^[0-9]+$ ]] && (( index >= 1 && index <= ${#ifaces[@]} )); then
-      selected_iface="${ifaces[$((index-1))]}"
-      echo "You selected: $selected_iface"
+    read -p "$prompt" iface
+    if [[ -z "$iface" ]]; then
+      echo "Input cannot be empty. Please provide a valid interface name."
+    else
+      echo "$iface"
       return
     fi
-    echo "Invalid selection. Try again."
   done
-}
-
-# Function to get Ethernet interfaces (non-Wi-Fi, non-loopback)
-get_eth_ifaces() {
-  ip -o link show | awk -F': ' '{print $2}' | grep -vE '^(lo|wl|wlan|wlx)' || true
-}
-
-# Function to get Wi-Fi interfaces (using iw)
-get_wifi_ifaces() {
-  iw dev | awk '$1=="Interface"{print $2}' || true
 }
 
 # Setup Hotspot
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
 
-  # Fetch the Ethernet and Wi-Fi interfaces
-  eth_ifaces=($(get_eth_ifaces))
-  wifi_ifaces=($(get_wifi_ifaces))
-
-  if [ "${#eth_ifaces[@]}" -eq 0 ]; then
-    echo "No Ethernet interfaces found. Aborting."
-    exit 1
-  fi
-  if [ "${#wifi_ifaces[@]}" -eq 0 ]; then
-    echo "No Wi-Fi interfaces found. Aborting."
-    exit 1
-  fi
-
-  # Prompt user to select interfaces first
-  ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
-  WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
+  # Prompt user to input Ethernet and Wi-Fi interfaces
+  ETH_IFACE=$(choose_input "Enter the name of your Ethernet interface (internet source): ")
+  WIFI_IFACE=$(choose_input "Enter the name of your Wi-Fi interface (for hotspot): ")
 
   echo
   echo "You have selected:"
