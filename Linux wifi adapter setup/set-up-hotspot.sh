@@ -2,6 +2,7 @@
 
 set -e
 
+# Function to show interface selection menu
 choose_interface() {
   local prompt="$1"
   shift
@@ -15,7 +16,7 @@ choose_interface() {
 
   while true; do
     read -p "Choose [1-${#ifaces[@]}]: " index
-    if [[ $index =~ ^[1-9][0-9]*$ ]] && [ "$index" -le "${#ifaces[@]}" ]; then
+    if [[ "$index" =~ ^[0-9]+$ ]] && (( index >= 1 && index <= ${#ifaces[@]} )); then
       echo "${ifaces[$((index-1))]}"
       return
     fi
@@ -23,14 +24,17 @@ choose_interface() {
   done
 }
 
+# Function to get Ethernet interfaces (non-Wi-Fi, non-loopback)
 get_eth_ifaces() {
   ip -o link show | awk -F': ' '{print $2}' | grep -vE '^(lo|wl|wlan|wlx)' || true
 }
 
+# Function to get Wi-Fi interfaces (using iw)
 get_wifi_ifaces() {
-  iw dev | awk '$1=="Interface"{print $2}'
+  iw dev | awk '$1=="Interface"{print $2}' || true
 }
 
+# Setup Hotspot
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
 
@@ -38,11 +42,11 @@ setup_hotspot() {
   mapfile -t wifi_ifaces < <(get_wifi_ifaces)
 
   if [ "${#eth_ifaces[@]}" -eq 0 ]; then
-    echo "No Ethernet interfaces found!"
+    echo "No Ethernet interfaces found. Aborting."
     exit 1
   fi
   if [ "${#wifi_ifaces[@]}" -eq 0 ]; then
-    echo "No Wi-Fi interfaces found!"
+    echo "No Wi-Fi interfaces found. Aborting."
     exit 1
   fi
 
@@ -66,12 +70,14 @@ setup_hotspot() {
   systemctl stop dnsmasq || true
 
   echo "[+] Configuring static IP for $WIFI_IFACE..."
-  grep -q "$WIFI_IFACE" /etc/dhcpcd.conf || cat <<EOF >> /etc/dhcpcd.conf
+  if ! grep -q "$WIFI_IFACE" /etc/dhcpcd.conf; then
+    cat <<EOF >> /etc/dhcpcd.conf
 
 interface $WIFI_IFACE
     static ip_address=192.168.4.1/24
     nohook wpa_supplicant
 EOF
+  fi
 
   echo "[+] Writing dnsmasq config..."
   cat <<EOF > /etc/dnsmasq.conf
@@ -120,6 +126,7 @@ EOF
   echo "Password: $PASS"
 }
 
+# Reset Hotspot
 reset_hotspot() {
   echo "[!] Resetting hotspot setup..."
 
@@ -140,6 +147,7 @@ reset_hotspot() {
   echo "[+] Hotspot reset complete."
 }
 
+# Main Menu
 while true; do
   echo
   echo "========== Pi Hotspot Tool =========="
