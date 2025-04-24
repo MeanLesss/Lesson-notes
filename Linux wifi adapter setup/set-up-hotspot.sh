@@ -2,10 +2,52 @@
 
 set -e
 
+choose_interface() {
+  local prompt="$1"
+  shift
+  local ifaces=("$@")
+  
+  echo "$prompt"
+  for i in "${!ifaces[@]}"; do
+    echo "$((i+1))) ${ifaces[$i]}"
+  done
+
+  while true; do
+    read -p "Choose [1-${#ifaces[@]}]: " index
+    if [[ $index =~ ^[1-9][0-9]*$ ]] && [ "$index" -le "${#ifaces[@]}" ]; then
+      echo "${ifaces[$((index-1))]}"
+      return
+    fi
+    echo "Invalid selection. Try again."
+  done
+}
+
+get_eth_ifaces() {
+  ip -o link show | awk -F': ' '{print $2}' | grep -E '^(eth|enx)' || true
+}
+
+get_wifi_ifaces() {
+  ip -o link show | awk -F': ' '{print $2}' | grep -E '^(wlan|wlx)' || true
+}
+
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
-  read -p "Enter Ethernet interface (internet source, e.g. enx...): " ETH_IFACE
-  read -p "Enter Wi-Fi interface (hotspot, e.g. wlx...): " WIFI_IFACE
+
+  mapfile -t eth_ifaces < <(get_eth_ifaces)
+  mapfile -t wifi_ifaces < <(get_wifi_ifaces)
+
+  if [ "${#eth_ifaces[@]}" -eq 0 ]; then
+    echo "No Ethernet interfaces found!"
+    exit 1
+  fi
+  if [ "${#wifi_ifaces[@]}" -eq 0 ]; then
+    echo "No Wi-Fi interfaces found!"
+    exit 1
+  fi
+
+  ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
+  WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
+
   read -p "Enter Hotspot SSID: " SSID
   read -s -p "Enter Hotspot Password (min 8 chars): " PASS
   echo
