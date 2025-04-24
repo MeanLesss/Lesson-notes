@@ -56,7 +56,7 @@ setup_hotspot() {
     exit 1
   fi
 
-  # Prompt user to select interfaces
+  # Prompt user to select interfaces first
   ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
   WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
 
