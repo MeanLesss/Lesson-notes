@@ -6,7 +6,8 @@ choose_interface() {
   local prompt="$1"
   shift
   local ifaces=("$@")
-  
+
+  echo
   echo "$prompt"
   for i in "${!ifaces[@]}"; do
     echo "$((i+1))) ${ifaces[$i]}"
@@ -23,11 +24,11 @@ choose_interface() {
 }
 
 get_eth_ifaces() {
-  ip -o link show | awk -F': ' '{print $2}' | grep -E '^(eth|enx)' || true
+  ip -o link show | awk -F': ' '{print $2}' | grep -vE '^(lo|wl|wlan|wlx)' || true
 }
 
 get_wifi_ifaces() {
-  ip -o link show | awk -F': ' '{print $2}' | grep -E '^(wlan|wlx)' || true
+  iw dev | awk '$1=="Interface"{print $2}'
 }
 
 setup_hotspot() {
@@ -61,8 +62,8 @@ setup_hotspot() {
   apt update
   apt install -y hostapd dnsmasq iptables-persistent
 
-  systemctl stop hostapd
-  systemctl stop dnsmasq
+  systemctl stop hostapd || true
+  systemctl stop dnsmasq || true
 
   echo "[+] Configuring static IP for $WIFI_IFACE..."
   grep -q "$WIFI_IFACE" /etc/dhcpcd.conf || cat <<EOF >> /etc/dhcpcd.conf
