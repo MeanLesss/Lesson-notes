@@ -153,6 +153,30 @@ reset_hotspot() {
   echo "[+] Hotspot reset complete."
 }
 
+# Turn on Hotspot
+turn_on_hotspot() {
+  echo "[+] Turning on the hotspot..."
+  systemctl start hostapd
+  systemctl start dnsmasq
+  echo "[+] Hotspot is now running."
+}
+
+# Turn off Hotspot
+turn_off_hotspot() {
+  echo "[+] Turning off the hotspot..."
+  systemctl stop hostapd
+  systemctl stop dnsmasq
+  echo "[+] Hotspot is now stopped."
+}
+
+# Enable Hotspot to Start on Boot
+enable_on_startup() {
+  echo "[+] Enabling hotspot to start on boot..."
+  systemctl enable hostapd
+  systemctl enable dnsmasq
+  echo "[+] Hotspot is now set to start on boot."
+}
+
 # Main Menu
 while true; do
   echo
@@ -161,15 +185,21 @@ while true; do
   echo "2) Set up Wi-Fi Hotspot"
   echo "3) Reset / Remove Hotspot"
   echo "4) List Ethernet and Wi-Fi Interfaces"
-  echo "5) Exit"
-  read -p "Select an option [1-5]: " choice
+  echo "5) Turn On Hotspot"
+  echo "6) Turn Off Hotspot"
+  echo "7) Set Hotspot to Start on Boot"
+  echo "8) Exit"
+  read -p "Select an option [1-8]: " choice
 
   case $choice in
     1) install_packages ;;
     2) setup_hotspot ;;
     3) reset_hotspot ;;
     4) list_interfaces ;;
-    5) echo "Bye!"; exit 0 ;;
+    5) turn_on_hotspot ;;
+    6) turn_off_hotspot ;;
+    7) enable_on_startup ;;
+    8) echo "Bye!"; exit 0 ;;
     *) echo "Invalid option. Try again." ;;
   esac
 done
