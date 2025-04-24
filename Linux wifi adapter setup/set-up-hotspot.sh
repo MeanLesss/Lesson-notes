@@ -17,6 +17,19 @@ choose_input() {
   done
 }
 
+# Function to list Ethernet and Wi-Fi interfaces
+list_interfaces() {
+  echo "=== Available Interfaces ==="
+  
+  # List Ethernet interfaces
+  echo "Ethernet interfaces:"
+  ip -o link show | awk -F': ' '{print $2}' | grep -E 'eth|enx'
+  
+  # List Wi-Fi interfaces
+  echo "Wi-Fi interfaces:"
+  iw dev | grep 'Interface' | awk '{print $2}'
+}
+
 # Install Required Packages
 install_packages() {
   echo "[+] Installing required packages..."
@@ -147,14 +160,16 @@ while true; do
   echo "1) Install Required Packages"
   echo "2) Set up Wi-Fi Hotspot"
   echo "3) Reset / Remove Hotspot"
-  echo "4) Exit"
-  read -p "Select an option [1-4]: " choice
+  echo "4) List Ethernet and Wi-Fi Interfaces"
+  echo "5) Exit"
+  read -p "Select an option [1-5]: " choice
 
   case $choice in
     1) install_packages ;;
     2) setup_hotspot ;;
     3) reset_hotspot ;;
-    4) echo "Bye!"; exit 0 ;;
+    4) list_interfaces ;;
+    5) echo "Bye!"; exit 0 ;;
     *) echo "Invalid option. Try again." ;;
   esac
 done
