@@ -8,6 +8,11 @@ choose_interface() {
   shift
   local ifaces=("$@")
 
+  if [ "${#ifaces[@]}" -eq 0 ]; then
+    echo "No interfaces found! Exiting."
+    exit 1
+  fi
+
   echo
   echo "$prompt"
   for i in "${!ifaces[@]}"; do
@@ -38,8 +43,9 @@ get_wifi_ifaces() {
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
 
-  mapfile -t eth_ifaces < <(get_eth_ifaces)
-  mapfile -t wifi_ifaces < <(get_wifi_ifaces)
+  # Fetch the Ethernet and Wi-Fi interfaces
+  eth_ifaces=($(get_eth_ifaces))
+  wifi_ifaces=($(get_wifi_ifaces))
 
   if [ "${#eth_ifaces[@]}" -eq 0 ]; then
     echo "No Ethernet interfaces found. Aborting."
@@ -50,6 +56,7 @@ setup_hotspot() {
     exit 1
   fi
 
+  # Prompt user to select interfaces
   ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
   WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
 
@@ -66,6 +73,7 @@ setup_hotspot() {
   apt update
   apt install -y hostapd dnsmasq iptables-persistent
 
+  # Stop services if running before setup
   systemctl stop hostapd || true
   systemctl stop dnsmasq || true
 
