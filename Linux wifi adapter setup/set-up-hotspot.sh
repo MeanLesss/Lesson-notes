@@ -17,6 +17,15 @@ choose_input() {
   done
 }
 
+# Install Required Packages
+install_packages() {
+  echo "[+] Installing required packages..."
+  apt update
+  apt install -y hostapd dnsmasq iptables-persistent
+
+  echo "[+] Package installation complete."
+}
+
 # Setup Hotspot
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
@@ -43,24 +52,16 @@ setup_hotspot() {
 
   echo
   echo "Configuration complete."
-  echo "Proceeding with package installation and setup."
+  echo "Proceeding with setup."
 
   # Ask user to confirm before continuing
-  read -p "Do you want to proceed with the installation and setup? (y/n): " confirm
+  read -p "Do you want to proceed with the setup? (y/n): " confirm
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     echo "Exiting script. No changes were made."
     exit 0
   fi
 
-  # Install required packages
-  echo "[+] Installing required packages..."
-  apt update
-  apt install -y hostapd dnsmasq iptables-persistent
-
-  # Stop services if running before setup
-  systemctl stop hostapd || true
-  systemctl stop dnsmasq || true
-
+  # Configure the static IP, dnsmasq, and hostapd
   echo "[+] Configuring static IP for $WIFI_IFACE..."
   if ! grep -q "$WIFI_IFACE" /etc/dhcpcd.conf; then
     cat <<EOF >> /etc/dhcpcd.conf
@@ -143,15 +144,17 @@ reset_hotspot() {
 while true; do
   echo
   echo "========== Pi Hotspot Tool =========="
-  echo "1) Set up Wi-Fi Hotspot"
-  echo "2) Reset / Remove Hotspot"
-  echo "3) Exit"
-  read -p "Select an option [1-3]: " choice
+  echo "1) Install Required Packages"
+  echo "2) Set up Wi-Fi Hotspot"
+  echo "3) Reset / Remove Hotspot"
+  echo "4) Exit"
+  read -p "Select an option [1-4]: " choice
 
   case $choice in
-    1) setup_hotspot ;;
-    2) reset_hotspot ;;
-    3) echo "Bye!"; exit 0 ;;
+    1) install_packages ;;
+    2) setup_hotspot ;;
+    3) reset_hotspot ;;
+    4) echo "Bye!"; exit 0 ;;
     *) echo "Invalid option. Try again." ;;
   esac
 done
