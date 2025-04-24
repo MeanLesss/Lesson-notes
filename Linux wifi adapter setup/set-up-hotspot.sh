@@ -22,7 +22,8 @@ choose_interface() {
   while true; do
     read -p "Choose [1-${#ifaces[@]}]: " index
     if [[ "$index" =~ ^[0-9]+$ ]] && (( index >= 1 && index <= ${#ifaces[@]} )); then
-      echo "${ifaces[$((index-1))]}"
+      selected_iface="${ifaces[$((index-1))]}"
+      echo "You selected: $selected_iface"
       return
     fi
     echo "Invalid selection. Try again."
@@ -59,6 +60,12 @@ setup_hotspot() {
   # Prompt user to select interfaces first
   ETH_IFACE=$(choose_interface "Select your Ethernet interface (internet source):" "${eth_ifaces[@]}")
   WIFI_IFACE=$(choose_interface "Select your Wi-Fi interface (for hotspot):" "${wifi_ifaces[@]}")
+
+  echo
+  echo "You have selected:"
+  echo "Ethernet interface: $ETH_IFACE"
+  echo "Wi-Fi interface: $WIFI_IFACE"
+  echo
 
   # Get SSID and Password
   read -p "Enter Hotspot SSID: " SSID
