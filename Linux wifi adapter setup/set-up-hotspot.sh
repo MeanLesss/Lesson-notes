@@ -21,11 +21,9 @@ choose_input() {
 list_interfaces() {
   echo "=== Available Interfaces ==="
   
-  # List Ethernet interfaces
   echo "Ethernet interfaces:"
   ip -o link show | awk -F': ' '{print $2}' | grep -E 'eth|enx'
-  
-  # List Wi-Fi interfaces
+
   echo "Wi-Fi interfaces:"
   iw dev | grep 'Interface' | awk '{print $2}'
 }
@@ -35,7 +33,6 @@ install_packages() {
   echo "[+] Installing required packages..."
   apt update
   apt install -y hostapd dnsmasq iptables-persistent
-
   echo "[+] Package installation complete."
 }
 
@@ -43,7 +40,6 @@ install_packages() {
 setup_hotspot() {
   echo "=== Raspberry Pi Hotspot Setup ==="
 
-  # Prompt user to input Ethernet and Wi-Fi interfaces
   ETH_IFACE=$(choose_input "Enter the name of your Ethernet interface (internet source): ")
   WIFI_IFACE=$(choose_input "Enter the name of your Wi-Fi interface (for hotspot): ")
 
@@ -53,7 +49,6 @@ setup_hotspot() {
   echo "Wi-Fi interface: $WIFI_IFACE"
   echo
 
-  # Get SSID and Password
   read -p "Enter Hotspot SSID: " SSID
   read -s -p "Enter Hotspot Password (min 8 chars): " PASS
   echo
@@ -65,16 +60,12 @@ setup_hotspot() {
 
   echo
   echo "Configuration complete."
-  echo "Proceeding with setup."
-
-  # Ask user to confirm before continuing
   read -p "Do you want to proceed with the setup? (y/n): " confirm
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     echo "Exiting script. No changes were made."
     exit 0
   fi
 
-  # Configure the static IP, dnsmasq, and hostapd
   echo "[+] Configuring static IP for $WIFI_IFACE..."
   if ! grep -q "$WIFI_IFACE" /etc/dhcpcd.conf; then
     cat <<EOF >> /etc/dhcpcd.conf
@@ -169,12 +160,32 @@ turn_off_hotspot() {
   echo "[+] Hotspot is now stopped."
 }
 
-# Enable Hotspot to Start on Boot
+# Enable Hotspot on Boot
 enable_on_startup() {
   echo "[+] Enabling hotspot to start on boot..."
   systemctl enable hostapd
   systemctl enable dnsmasq
   echo "[+] Hotspot is now set to start on boot."
+}
+
+# Fix Interface IP
+fix_hotspot_interface() {
+  echo "=== Fix Hotspot Interface (Manual IP Assignment) ==="
+  list_interfaces
+
+  local iface
+  iface=$(choose_input "Enter the interface name to fix (Wi-Fi dongle for hotspot): ")
+
+  echo "[+] Fixing $iface..."
+
+  ip link set "$iface" down
+  ip addr flush dev "$iface"
+  ip addr add 192.168.4.1/24 dev "$iface"
+  ip link set "$iface" up
+
+  echo
+  echo "[+] Static IP 192.168.4.1/24 has been assigned to $iface"
+  ip a show "$iface"
 }
 
 # Main Menu
@@ -189,7 +200,8 @@ while true; do
   echo "6) Turn Off Hotspot"
   echo "7) Set Hotspot to Start on Boot"
   echo "8) Exit"
-  read -p "Select an option [1-8]: " choice
+  echo "9) Fix Hotspot Interface (Assign Static IP Manually)"
+  read -p "Select an option [1-9]: " choice
 
   case $choice in
     1) install_packages ;;
@@ -200,6 +212,7 @@ while true; do
     6) turn_off_hotspot ;;
     7) enable_on_startup ;;
     8) echo "Bye!"; exit 0 ;;
+    9) fix_hotspot_interface ;;
     *) echo "Invalid option. Try again." ;;
   esac
 done
