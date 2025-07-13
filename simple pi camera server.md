@@ -21,41 +21,194 @@ Create `stream_server.py`:
 
 ```python
 #!/usr/bin/env python3
-#!/usr/bin/env python3
-from flask import Flask, Response
+"""
+Lightweight Pi Camera Web Server for DietPi
+Optimized for Pi Zero 2W - No PHP/Apache needed
+"""
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from picamera2 import Picamera2
 import io
 import time
+import threading
+import os
 
-app = Flask(__name__)
-picam2 = Picamera2()
-
-def generate_frames():
-    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-    picam2.start()
+class CameraServer(BaseHTTPRequestHandler):
+    camera = None
     
-    while True:
-        stream = io.BytesIO()
-        picam2.capture_file(stream, format='jpeg')
-        stream.seek(0)
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + stream.read() + b'\r\n')
-        time.sleep(0.033)  # ~30fps
+    @classmethod
+    def initialize_camera(cls):
+        if cls.camera is None:
+            try:
+                cls.camera = Picamera2()
+                # Simpler config for better compatibility
+                config = cls.camera.create_still_configuration(
+                    main={"size": (640, 480)}
+                )
+                cls.camera.configure(config)
+                cls.camera.start()
+                time.sleep(2)  # Camera warm-up
+                print("Camera initialized successfully")
+            except Exception as e:
+                print(f"Camera initialization failed: {e}")
+                cls.camera = None
+                raise
+    
+    def do_GET(self):
+        if self.path == '/':
+            # Serve main page
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            
+            html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Pi Camera - DietPi</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body { font-family: Arial; text-align: center; background: #f0f0f0; }
+                    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+                    img { max-width: 100%; height: auto; border: 2px solid #333; }
+                    button { 
+                        background: #4CAF50; color: white; padding: 10px 20px; 
+                        border: none; cursor: pointer; margin: 5px; font-size: 16px;
+                    }
+                    button:hover { background: #45a049; }
+                    #status { margin: 10px; color: #333; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Pi Camera Stream</h1>
+                    <img id="stream" src="/stream.mjpg" alt="Camera Stream" style="width:1920px;height:1080px;">
+                    <br><br>
+                    <button onclick="capture()">Capture Photo</button>
+                    <button onclick="toggleStream()">Toggle Stream</button>
+                    <div id="status"></div>
+                </div>
+                
+                <script>
+                    let streaming = true;
+                    const img = document.getElementById('stream');
+                    const status = document.getElementById('status');
+                    
+                    function toggleStream() {
+                        streaming = !streaming;
+                        if (streaming) {
+                            img.src = '/stream.mjpg?' + Date.now();
+                            status.textContent = 'Stream started';
+                        } else {
+                            img.src = '/snapshot.jpg?' + Date.now();
+                            status.textContent = 'Stream paused';
+                        }
+                    }
+                    
+                    function capture() {
+                        fetch('/capture')
+                            .then(response => response.text())
+                            .then(data => {
+                                status.textContent = data;
+                                setTimeout(() => status.textContent = '', 3000);
+                            });
+                    }
+                    
+                    // Auto-refresh snapshot if stream fails
+                    img.onerror = function() {
+                        if (streaming) {
+                            setTimeout(() => {
+                                img.src = '/snapshot.jpg?' + Date.now();
+                            }, 1000);
+                        }
+                    };
+                </script>
+            </body>
+            </html>
+            """
+            self.wfile.write(html.encode())
+            
+        elif self.path == '/snapshot.jpg':
+            # Single snapshot
+            self.send_response(200)
+            self.send_header('Content-type', 'image/jpeg')
+            self.end_headers()
+            
+            stream = io.BytesIO()
+            self.initialize_camera()
+            self.camera.capture_file(stream, format='jpeg')
+            stream.seek(0)
+            self.wfile.write(stream.read())
+            
+        elif self.path.startswith('/stream.mjpg'):
+            # MJPEG stream
+            self.send_response(200)
+            self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=frame')
+            self.end_headers()
+            
+            self.initialize_camera()
+            try:
+                while True:
+                    stream = io.BytesIO()
+                    self.camera.capture_file(stream, format='jpeg')
+                    stream.seek(0)
+                    
+                    self.wfile.write(b'--frame\r\n')
+                    self.send_header('Content-type', 'image/jpeg')
+                    self.send_header('Content-length', str(stream.getbuffer().nbytes))
+                    self.end_headers()
+                    self.wfile.write(stream.read())
+                    
+                    time.sleep(0.1)  # 10 FPS for Pi Zero 2W
+            except Exception as e:
+                print(f"Stream ended: {e}")
+                
+        elif self.path == '/capture':
+            # Capture and save photo
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"capture_{timestamp}.jpg"
+            self.initialize_camera()
+            self.camera.capture_file(filename)
+            
+            response = f"Photo saved as {filename}"
+            self.wfile.write(response.encode())
+            
+        else:
+            self.send_error(404)
+    
+    def log_message(self, format, *args):
+        # Reduce console spam
+        if '/stream.mjpg' not in args[0]:
+            super().log_message(format, *args)
 
-@app.route('/')
-def index():
-    return '''<html><body>
-    <h1>Pi Camera Live Stream</h1>
-    <img src="/video_feed" width="640" height="480">
-    </body></html>'''
-
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+def run_server(port=8090):
+    """Start the camera web server"""
+    server_address = ('', port)
+    httpd = HTTPServer(server_address, CameraServer)
+    
+    print(f"Camera server running on port {port}")
+    print(f"Access at: http://YOUR_PI_IP:{port}/")
+    print("Press Ctrl+C to stop")
+    
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+        if CameraServer.camera:
+            CameraServer.camera.stop()
+        httpd.shutdown()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    # Create directory for captures
+    os.makedirs("captures", exist_ok=True)
+    os.chdir("captures")
+    
+    # Start server
+    run_server(8090)
 ```
 
 Install Flask and run:
