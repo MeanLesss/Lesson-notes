@@ -1,33 +1,113 @@
-#Set up Kali Linux wifi dongle for TP-Link AC600 T2U Driver Install 
+# Installing TP-Link Archer AC600 (T2U) Driver on Kali Linux
 
-1- Check if the usb is recognize by the system
-```command
+This guide covers installing drivers for the TP-Link AC600 / T2U series on Kali Linux.  
+The T2U name is used for multiple hardware revisions, so the **first step** is to identify your chipset.
+
+---
+
+## 1. Identify Your Adapter's Chipset
+
+Run:
+```bash
 lsusb
 ```
+Common results:
 
-2- Check the wireless/network component devices
-```command
-iwconfig
+| Chipset | USB ID Example | Notes |
+|---------|----------------|-------|
+| **Realtek RTL8811AU / RTL8821AU** | `2357:0120` or shows as "Realtek Semiconductor Corp." | Requires DKMS driver |
+| **MediaTek MT7610U** | `0e8d:7610` or `148f:761a` | Supported by in-kernel `mt76` driver |
+
+---
+
+## 2. Realtek RTL8811AU / RTL8821AU (T2U Plus, T2U Nano)
+
+### 2.1 Install Build Tools & Headers
+```bash
+sudo apt update
+sudo apt install -y dkms build-essential linux-headers-$(uname -r)
 ```
 
-3- Install RealTek library
-```command
+### 2.2 Clean Up Old/Broken Driver Installations
+```bash
+sudo apt purge realtek-rtl88xxau-dkms
+sudo rm -rf /usr/src/rtl88xxau*
+```
+
+### 2.3 Install the Realtek DKMS Driver
+```bash
 sudo apt install realtek-rtl88xxau-dkms
 ```
 
-4- Get System architecture name
-```
-uname -r
+> **Note:** During install, you should see:
+> ```
+> Building for 6.x.x-kali-amd64
+> Module build for kernel 6.x.x was successful
+> ```
+
+If you see errors, check:
+```bash
+cat /var/lib/dkms/rtl88xxau/*/build/make.log
 ```
 
-5- install header and builder
-```
-wget https://kali.download/kali/pool/main/l/linux/linux-headers-6.6.9-common_6.6.9-1kali1_all.deb
-wget https://kali.download/kali/pool/main/l/linux/linux-kbuild-6.6.9_6.6.9-dbgsym_6.12.25-1kali1_amd64.deb
-wget
+### 2.4 Load the Driver
+```bash
+sudo modprobe 88XXau
 ```
 
-6- Clone driver
+### 2.5 Verify Interface
+```bash
+ip link
 ```
-git clone https://github.com/morrownr/8821au-20210708.git
+
+### 2.6 (Optional) Enable Monitor Mode
+```bash
+sudo ip link set wlan0 down
+sudo iw dev wlan0 set type monitor
+sudo ip link set wlan0 up
 ```
+
+---
+
+## 3. MediaTek MT7610U (Original T2U, T2UH)
+
+This chipset is supported by the **in-kernel** `mt76` driver and usually works out of the box.
+
+### 3.1 Check If It Works
+Plug in the adapter and run:
+```bash
+ip link
+```
+If you see `wlan0` or another `wlanX`, it’s ready to use.
+
+### 3.2 If It Doesn’t Appear
+Install firmware package:
+```bash
+sudo apt update
+sudo apt install -y firmware-misc-nonfree
+```
+Replug the adapter and check:
+```bash
+dmesg | grep -i mt76
+```
+
+---
+
+## 4. Troubleshooting
+
+- **Module not found** (Realtek)  
+  → Headers were missing when DKMS tried to build. Reinstall headers and the DKMS package.
+- **DKMS build fails** (Realtek)  
+  → Use a patched driver source from [Aircrack-ng rtl8812au repo](https://github.com/aircrack-ng/rtl8812au).
+- **Adapter not detected**  
+  → Verify chipset with `lsusb` and confirm correct driver path.
+
+---
+
+## 5. References
+
+- Kali Linux Package: [`realtek-rtl88xxau-dkms`](https://pkg.kali.org/pkg/realtek-rtl88xxau-dkms)
+- Realtek 88XXau DKMS (Aircrack-ng): [GitHub](https://github.com/aircrack-ng/rtl8812au)
+- MediaTek `mt76` driver: [Linux Wireless wiki](https://wireless.wiki.kernel.org/en/users/drivers/mt76)
+
+---
