@@ -791,3 +791,369 @@ Check the saved JSON:
 Would you like me to extend this next into **multi-user collaborative editing** (so multiple designers can edit the same layout live using SignalR)?
 
 
+# Part 3
+Excellent — let’s make this **local hybrid autosave system** more complete by adding a **snapshot recovery panel** directly into your Blazor Designer.
+
+This gives you a full “local Figma-like” workflow:
+
+* Auto-save + snapshot rotation
+* Manual Ctrl + S save
+* Snapshot history list
+* Load or restore old snapshots
+* Visual status feedback (Saved / Saving / Restored from X)
+
+---
+
+# 🧾 Blazor Designer — Hybrid Local Autosave + Snapshot Recovery
+
+---
+
+## ✅ New Features Added
+
+| Feature            | Description                                  |
+| ------------------ | -------------------------------------------- |
+| 💾 Auto-Save       | Every 10 s (via SignalR)                     |
+| ⌨️ Ctrl + S        | Manual save shortcut                         |
+| 🕒 Snapshots       | Timestamped backups (10 latest)              |
+| 🔁 Recovery Panel  | Restore any older snapshot                   |
+| 📁 Local Storage   | Uses `/App_Data/Layouts/default/` as “cloud” |
+| 💬 Status Feedback | Shows “Saved at…”, “Restored from snapshot…” |
+
+---
+
+## 🧱 Folder Layout
+
+```
+App_Data/
+└── Layouts/
+    └── default/
+        ├── autosave.json
+        └── snapshots/
+            ├── snapshot_20251111_144500.json
+            ├── snapshot_20251111_145000.json
+            └── ...
+```
+
+---
+
+## 🧩 1. Updated SaveHub (Server Side)
+
+We’ll add a **`ListSnapshots`** method and a **`LoadSnapshot`** method to the existing hub.
+
+### `Hubs/SaveHub.cs`
+
+```csharp
+using BlazorA4Designer.Models;
+using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
+
+namespace BlazorA4Designer.Hubs;
+
+public class SaveHub : Hub
+{
+    private static readonly string DataDir = Path.Combine("App_Data", "Layouts", "default");
+    private static readonly string SnapshotDir = Path.Combine(DataDir, "snapshots");
+    private static readonly string AutosaveFile = Path.Combine(DataDir, "autosave.json");
+    private const int MaxSnapshots = 10;
+
+    public SaveHub()
+    {
+        Directory.CreateDirectory(DataDir);
+        Directory.CreateDirectory(SnapshotDir);
+    }
+
+    public async Task SaveLayout(LayoutConfig layout)
+    {
+        var json = JsonSerializer.Serialize(layout, new JsonSerializerOptions { WriteIndented = true });
+
+        // Autosave
+        await File.WriteAllTextAsync(AutosaveFile, json);
+
+        // Snapshot
+        var snapshotPath = Path.Combine(SnapshotDir, $"snapshot_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
+        await File.WriteAllTextAsync(snapshotPath, json);
+
+        // Cleanup
+        var snapshots = Directory.GetFiles(SnapshotDir, "*.json")
+                                 .OrderByDescending(f => f)
+                                 .Skip(MaxSnapshots)
+                                 .ToList();
+
+        foreach (var file in snapshots)
+            File.Delete(file);
+
+        await Clients.Caller.SendAsync("Saved", DateTime.UtcNow);
+    }
+
+    public async Task<LayoutConfig> LoadLayout()
+    {
+        // Try autosave first
+        if (File.Exists(AutosaveFile))
+        {
+            var json = await File.ReadAllTextAsync(AutosaveFile);
+            return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+        }
+
+        // Then last snapshot
+        var latest = Directory.GetFiles(SnapshotDir, "*.json")
+                              .OrderByDescending(f => f)
+                              .FirstOrDefault();
+        if (latest != null)
+        {
+            var json = await File.ReadAllTextAsync(latest);
+            return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+        }
+
+        return new LayoutConfig();
+    }
+
+    public Task<List<string>> ListSnapshots()
+    {
+        var files = Directory.GetFiles(SnapshotDir, "*.json")
+            .OrderByDescending(f => f)
+            .Select(f => Path.GetFileNameWithoutExtension(f)!)
+            .ToList();
+        return Task.FromResult(files);
+    }
+
+    public async Task<LayoutConfig> LoadSnapshot(string snapshotName)
+    {
+        var path = Path.Combine(SnapshotDir, snapshotName + ".json");
+        if (File.Exists(path))
+        {
+            var json = await File.ReadAllTextAsync(path);
+            return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+        }
+        throw new FileNotFoundException("Snapshot not found", snapshotName);
+    }
+}
+```
+
+---
+
+## 🧩 2. Update `Designer.razor` (Client Side)
+
+We’ll now add a **snapshot panel** in the right-hand property section.
+
+### Updated snippet inside `Designer.razor`
+
+```razor
+@page "/designer"
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorA4Designer.Models
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<h3>🎨 A4 Designer</h3>
+
+<div class="status-bar">
+    <strong>Status:</strong> @SaveStatus
+</div>
+
+<div class="main-container">
+    <!-- Canvas -->
+    <div id="canvas" class="design-canvas">
+        @foreach (var el in Layout.Elements)
+        {
+            var selected = el == SelectedElement ? "selected" : "";
+            <div id="@el.Id"
+                 class="design-element @selected"
+                 style="@GetElementStyle(el)"
+                 @onclick="@(() => SelectElement(el))">
+                @if (el.Type == "text")
+                {
+                    <span>@el.Content</span>
+                }
+                else if (el.Type == "image")
+                {
+                    <img src="@el.Content" style="width:100%;height:100%;object-fit:cover;" />
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Property & Snapshot Panel -->
+    <div class="property-panel">
+        <h5>Properties</h5>
+        @if (SelectedElement != null)
+        {
+            <div>
+                <label>Content:</label>
+                <input @bind="SelectedElement.Content" class="form-control" />
+
+                <label>X:</label>
+                <input type="number" @bind="SelectedElement.X" class="form-control" />
+
+                <label>Y:</label>
+                <input type="number" @bind="SelectedElement.Y" class="form-control" />
+
+                <label>Width:</label>
+                <input type="number" @bind="SelectedElement.Width" class="form-control" />
+
+                <label>Height:</label>
+                <input type="number" @bind="SelectedElement.Height" class="form-control" />
+
+                <label>Rotation:</label>
+                <input type="number" @bind="SelectedElement.Rotation" class="form-control" />
+            </div>
+        }
+        else
+        {
+            <p>Select an item to edit.</p>
+        }
+
+        <div class="mt-3">
+            <button class="btn btn-sm btn-success" @onclick="AddText">Add Text</button>
+            <button class="btn btn-sm btn-info" @onclick="AddImage">Add Image</button>
+            <button class="btn btn-sm btn-primary" @onclick="ExportToPdf">Export PDF</button>
+        </div>
+
+        <hr />
+
+        <h5>🕒 Snapshots</h5>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="LoadSnapshots">Refresh</button>
+        <ul class="snapshot-list">
+            @foreach (var snap in Snapshots)
+            {
+                <li>
+                    <button class="btn btn-link p-0" @onclick="() => RestoreSnapshot(snap)">
+                        @snap
+                    </button>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    private LayoutConfig Layout = new();
+    private DesignElement? SelectedElement;
+    private HubConnection? hubConnection;
+    private string SaveStatus = "Not saved";
+    private List<string> Snapshots = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Nav.ToAbsoluteUri("/savehub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<DateTime>("Saved", (time) =>
+        {
+            SaveStatus = $"💾 Saved at {time:T}";
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+
+        Layout = await hubConnection.InvokeAsync<LayoutConfig>("LoadLayout");
+        await LoadSnapshots();
+        _ = AutoSaveLoop();
+    }
+
+    private async Task AutoSaveLoop()
+    {
+        while (true)
+        {
+            await Task.Delay(10000);
+            await SaveLayout();
+        }
+    }
+
+    private async Task SaveLayout()
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+        {
+            SaveStatus = "Saving...";
+            await hubConnection.InvokeAsync("SaveLayout", Layout);
+        }
+    }
+
+    private async Task LoadSnapshots()
+    {
+        if (hubConnection != null)
+            Snapshots = await hubConnection.InvokeAsync<List<string>>("ListSnapshots");
+    }
+
+    private async Task RestoreSnapshot(string name)
+    {
+        if (hubConnection == null) return;
+        Layout = await hubConnection.InvokeAsync<LayoutConfig>("LoadSnapshot", name);
+        SelectedElement = null;
+        SaveStatus = $"🔁 Restored from {name}";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // same AddText, AddImage, GetElementStyle, etc. as before
+}
+```
+
+---
+
+## 🧠 3. Simple CSS additions
+
+Add to `designer.css`:
+
+```css
+.status-bar {
+    margin-bottom: 8px;
+}
+
+.snapshot-list {
+    list-style: none;
+    padding-left: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.snapshot-list li {
+    margin-bottom: 4px;
+}
+
+.snapshot-list button {
+    font-size: 0.85rem;
+    text-align: left;
+}
+```
+
+---
+
+## 💾 4. Behavior
+
+| Action                | What Happens                          |
+| --------------------- | ------------------------------------- |
+| Auto-save every 10 s  | Writes autosave.json + snapshot       |
+| Ctrl + S              | Forces save                           |
+| Refresh snapshot list | Lists local snapshot files            |
+| Click a snapshot      | Restores that version immediately     |
+| Startup               | Loads autosave or newest snapshot     |
+| Status bar            | Shows “Saved at” or “Restored from …” |
+
+---
+
+## 🧠 5. Optional enhancements
+
+| Enhancement          | How                                |
+| -------------------- | ---------------------------------- |
+| Compress snapshots   | GZip files on disk                 |
+| Delete snapshot      | Add “🗑️” button next to each      |
+| Restore confirmation | Prompt user before overwrite       |
+| Preview snapshot     | Render miniature canvas            |
+| Diff view            | Compare elements between snapshots |
+
+---
+
+## ✅ End Result
+
+You now have a **Blazor A4 Designer** that:
+
+* Auto-saves your layout locally
+* Creates timestamped backup snapshots
+* Lets you restore any previous version instantly
+* Behaves like a small-scale “local Figma” without relying on RAM or cloud storage
+
+---
+
+Would you like me to add **snapshot compression + cleanup rotation (e.g., keep 5 days worth)** next? That would make the storage more efficient if you run this long-term.
