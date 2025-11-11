@@ -1160,6 +1160,7 @@ Would you like me to add **snapshot compression + cleanup rotation (e.g., keep 5
 
 
 #Part 4
+
 Perfect! Let’s add **compression for snapshots** so each backup takes less disk space. We’ll use **GZip**, which is built into .NET. The idea is simple:
 
 * Instead of saving `snapshot_*.json`, we save `snapshot_*.json.gz`.
