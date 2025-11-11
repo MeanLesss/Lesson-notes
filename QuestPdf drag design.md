@@ -1157,3 +1157,133 @@ You now have a **Blazor A4 Designer** that:
 ---
 
 Would you like me to add **snapshot compression + cleanup rotation (e.g., keep 5 days worth)** next? That would make the storage more efficient if you run this long-term.
+
+
+#Part 4
+Perfect! Let’s add **compression for snapshots** so each backup takes less disk space. We’ll use **GZip**, which is built into .NET. The idea is simple:
+
+* Instead of saving `snapshot_*.json`, we save `snapshot_*.json.gz`.
+* On restore, we read the GZip stream and deserialize it.
+* Autosave (current layout) can stay uncompressed if you want fast local editing; or you can compress it too.
+
+---
+
+## 🧩 1. Update `SaveHub.cs` for Compressed Snapshots
+
+```csharp
+using BlazorA4Designer.Models;
+using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
+using System.IO.Compression;
+
+namespace BlazorA4Designer.Hubs;
+
+public class SaveHub : Hub
+{
+    private static readonly string DataDir = Path.Combine("App_Data", "Layouts", "default");
+    private static readonly string SnapshotDir = Path.Combine(DataDir, "snapshots");
+    private static readonly string AutosaveFile = Path.Combine(DataDir, "autosave.json"); // keep uncompressed for fast edits
+    private const int MaxSnapshots = 10;
+
+    public SaveHub()
+    {
+        Directory.CreateDirectory(DataDir);
+        Directory.CreateDirectory(SnapshotDir);
+    }
+
+    public async Task SaveLayout(LayoutConfig layout)
+    {
+        var json = JsonSerializer.Serialize(layout, new JsonSerializerOptions { WriteIndented = true });
+
+        // 1️⃣ Write autosave (uncompressed for fast reload)
+        await File.WriteAllTextAsync(AutosaveFile, json);
+
+        // 2️⃣ Write compressed snapshot
+        var snapshotName = $"snapshot_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json.gz";
+        var snapshotPath = Path.Combine(SnapshotDir, snapshotName);
+        using (var fs = File.Create(snapshotPath))
+        using (var gzip = new GZipStream(fs, CompressionLevel.Fastest))
+        using (var writer = new StreamWriter(gzip))
+        {
+            await writer.WriteAsync(json);
+        }
+
+        // 3️⃣ Cleanup old snapshots
+        var snapshots = Directory.GetFiles(SnapshotDir, "*.gz")
+                                 .OrderByDescending(f => f)
+                                 .Skip(MaxSnapshots)
+                                 .ToList();
+
+        foreach (var file in snapshots)
+            File.Delete(file);
+
+        await Clients.Caller.SendAsync("Saved", DateTime.UtcNow);
+    }
+
+    public async Task<LayoutConfig> LoadLayout()
+    {
+        // Load autosave if exists
+        if (File.Exists(AutosaveFile))
+        {
+            var json = await File.ReadAllTextAsync(AutosaveFile);
+            return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+        }
+
+        // fallback: latest snapshot
+        var latest = Directory.GetFiles(SnapshotDir, "*.gz")
+                              .OrderByDescending(f => f)
+                              .FirstOrDefault();
+        if (latest != null)
+        {
+            using var fs = File.OpenRead(latest);
+            using var gzip = new GZipStream(fs, CompressionMode.Decompress);
+            using var reader = new StreamReader(gzip);
+            var json = await reader.ReadToEndAsync();
+            return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+        }
+
+        return new LayoutConfig();
+    }
+
+    public Task<List<string>> ListSnapshots()
+    {
+        var files = Directory.GetFiles(SnapshotDir, "*.gz")
+                             .OrderByDescending(f => f)
+                             .Select(f => Path.GetFileNameWithoutExtension(f)!) // still remove .gz
+                             .ToList();
+        return Task.FromResult(files);
+    }
+
+    public async Task<LayoutConfig> LoadSnapshot(string snapshotName)
+    {
+        var path = Path.Combine(SnapshotDir, snapshotName + ".gz");
+        if (!File.Exists(path))
+            throw new FileNotFoundException("Snapshot not found", snapshotName);
+
+        using var fs = File.OpenRead(path);
+        using var gzip = new GZipStream(fs, CompressionMode.Decompress);
+        using var reader = new StreamReader(gzip);
+        var json = await reader.ReadToEndAsync();
+        return JsonSerializer.Deserialize<LayoutConfig>(json) ?? new LayoutConfig();
+    }
+}
+```
+
+---
+
+## ✅ Changes
+
+1. Snapshots are now compressed `.json.gz` files.
+2. `LoadLayout` and `LoadSnapshot` handle decompression automatically.
+3. Autosave remains uncompressed for fast UI feedback.
+4. Snapshot list (`ListSnapshots`) removes `.gz` when displaying in UI.
+
+---
+
+💡 **Tip:** GZip compression can reduce large JSON layouts (with lots of text or element properties) by **50–70%**, which is very helpful for long-term storage.
+
+This keeps your local filesystem usage efficient without changing the Blazor UI or SignalR behavior.
+
+---
+
+If you want, I can also **update the snapshot cleanup logic** so it ignores `.gz` extension while counting max snapshots, making it fully consistent. Do you want me to do that?
